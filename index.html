@@ -1,41 +1,68 @@
-// site.js
-const express = require("express");
-const mysql = require("mysql2");
-const app = express();
-
-app.use(express.json());
-
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "orders_db"
-});
-
-// جلب السلع
-app.get("/order/:num", (req, res) => {
-  db.query(
-    "SELECT * FROM order_items WHERE order_number = ?",
-    [req.params.num],
-    (e, r) => res.json(r)
-  );
-});
-
-// تعديل اسم السلعة
-app.put("/item/:id", (req, res) => {
-  db.query(
-    "UPDATE order_items SET item_name = ? WHERE id = ?",
-    [req.body.name, req.params.id],
-    () => res.sendStatus(200)
-  );
-});
-
-// الصفحة
 app.get("/", (req, res) => {
   res.send(`
-<input id="o" placeholder="رقم الطلب">
-<button onclick="load()">بحث</button>
-<ul id="l"></ul>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>System SOR</title>
+<style>
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.header {
+  position: fixed;
+  top: 15px;
+  right: 20px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.container {
+  margin-top: 120px;
+  text-align: center;
+}
+
+input {
+  padding: 10px;
+  width: 220px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+li {
+  background: white;
+  margin: 8px auto;
+  padding: 10px;
+  width: 300px;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">System SOR</div>
+
+<div class="container">
+  <input id="o" placeholder="رقم الطلب">
+  <button onclick="load()">بحث</button>
+  <ul id="l"></ul>
+</div>
 
 <script>
 async function load(){
@@ -66,7 +93,8 @@ async function load(){
   });
 }
 </script>
+
+</body>
+</html>
 `);
 });
-
-app.listen(3000);
