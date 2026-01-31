@@ -1,0 +1,72 @@
+// site.js
+const express = require("express");
+const mysql = require("mysql2");
+const app = express();
+
+app.use(express.json());
+
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "orders_db"
+});
+
+// جلب السلع
+app.get("/order/:num", (req, res) => {
+  db.query(
+    "SELECT * FROM order_items WHERE order_number = ?",
+    [req.params.num],
+    (e, r) => res.json(r)
+  );
+});
+
+// تعديل اسم السلعة
+app.put("/item/:id", (req, res) => {
+  db.query(
+    "UPDATE order_items SET item_name = ? WHERE id = ?",
+    [req.body.name, req.params.id],
+    () => res.sendStatus(200)
+  );
+});
+
+// الصفحة
+app.get("/", (req, res) => {
+  res.send(`
+<input id="o" placeholder="رقم الطلب">
+<button onclick="load()">بحث</button>
+<ul id="l"></ul>
+
+<script>
+async function load(){
+  const r = await fetch('/order/' + o.value);
+  const d = await r.json();
+  l.innerHTML = '';
+  d.forEach(x=>{
+    const li=document.createElement('li');
+    li.textContent=x.item_name;
+    li.onclick=()=>{
+      const i=document.createElement('input');
+      i.value=x.item_name;
+      li.replaceWith(i);
+      i.focus();
+      i.onkeydown=async e=>{
+        if(e.key==='Enter'){
+          await fetch('/item/'+x.id,{
+            method:'PUT',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name:i.value})
+          });
+          li.textContent=i.value;
+          i.replaceWith(li);
+        }
+      }
+    }
+    l.appendChild(li);
+  });
+}
+</script>
+`);
+});
+
+app.listen(3000);
